@@ -2,6 +2,7 @@ package de.eistrach.rtcommands.commands;
 
 import de.eistrach.rtcommands.commands.annotations.RuntimeCommand;
 import de.eistrach.rtcommands.commands.localization.Texts;
+import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 
 import java.lang.reflect.Method;
@@ -11,6 +12,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 public class CommandPattern {
 
@@ -125,15 +127,24 @@ public class CommandPattern {
             }
         }
 
+        final String consoleArgument = args[args.length - 1];
+
         if (argumentsIndex < argumentList.size()) {
             final CommandArgument argument = argumentList.get(argumentsIndex);
             if (checkValue || !argument.requireName()) {
-                // todo: add value suggestions
-                // suggestions.add("value");
+                commandManager.getCommandType(argument.getType()).getSuggestionProvider()
+                        .ifPresent(h -> suggestions.addAll(h.getSuggestions(argument, consoleArgument)));
             } else {
                 suggestions.add(argument.getName());
             }
         }
+
+        if (StringUtils.isNotBlank(consoleArgument)) {
+            return suggestions.stream()
+                    .filter(s -> s.toLowerCase().startsWith(consoleArgument.toLowerCase().trim()))
+                    .collect(Collectors.toList());
+        }
+
         return suggestions;
     }
 

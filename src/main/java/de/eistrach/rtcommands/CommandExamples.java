@@ -45,6 +45,12 @@ public class CommandExamples {
         System.out.println(p);
         return true;
     }
+
+    @RuntimeCommand(name = "perm", arguments = {"p:[Permission]"})
+    private boolean permissionTest(final CommandInfo info, final String permission) {
+
+        return true;
+    }
 }
 
 // \cmd1 source Eugen target Flip

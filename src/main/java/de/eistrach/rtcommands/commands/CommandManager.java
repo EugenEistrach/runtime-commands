@@ -9,6 +9,9 @@ import de.eistrach.rtcommands.commands.converters.impl.MaterialConverter;
 import de.eistrach.rtcommands.commands.converters.impl.PlayerConverter;
 import de.eistrach.rtcommands.commands.converters.impl.StringConverter;
 import de.eistrach.rtcommands.commands.localization.Texts;
+import de.eistrach.rtcommands.commands.suggestions.ISuggestionProvider;
+import de.eistrach.rtcommands.commands.suggestions.impl.MaterialSuggestionProvider;
+import de.eistrach.rtcommands.commands.suggestions.impl.PlayerSuggestionProvider;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandMap;
 import org.bukkit.command.PluginCommand;
@@ -37,7 +40,7 @@ public class CommandManager {
     private final Plugin plugin;
 
     private final Map<String, CustomCommand> commandMap = new HashMap<>();
-    private final Map<String, ICustomTypeConverter> converterMap = new HashMap<>();
+    private final Map<String, CommandType> converterMap = new HashMap<>();
 
     public CommandManager(final Plugin plugin) {
         this.plugin = plugin;
@@ -59,8 +62,18 @@ public class CommandManager {
                 .forEach(this::registerCommand);
     }
 
-    public void addConverter(final String typeName, final ICustomTypeConverter converter) {
-        converterMap.put(typeName, converter);
+    public void createType(final String typeName, final ICustomTypeConverter converter) {
+        createType(typeName, converter, null);
+    }
+
+    public void createType(final String typeName, final ICustomTypeConverter converter,
+                           final ISuggestionProvider suggestionHandler) {
+
+        converterMap.put(typeName, new CommandType(typeName, converter, suggestionHandler));
+    }
+
+    public CommandType getCommandType(final String typeName) {
+        return converterMap.get(typeName);
     }
 
     public Optional convert(final String typeName, final String value) {
@@ -68,16 +81,16 @@ public class CommandManager {
             log.severe(() -> String.format(Texts.CONVERTER_NOT_FOUND, typeName));
             return Optional.empty();
         }
-        return converterMap.get(typeName).convert(value);
+        return converterMap.get(typeName).getTypeConverter().convert(value);
     }
 
     private void addDefaultConverters() {
-        addConverter("String", new StringConverter());
-        addConverter("Integer", new IntegerConverter());
-        addConverter("Float", new FloatConverter());
-        addConverter("Double", new DoubleConverter());
-        addConverter("Player", new PlayerConverter(plugin));
-        addConverter("Material", new MaterialConverter());
+        createType("String", new StringConverter());
+        createType("Integer", new IntegerConverter());
+        createType("Float", new FloatConverter());
+        createType("Double", new DoubleConverter());
+        createType("Player", new PlayerConverter(plugin), new PlayerSuggestionProvider());
+        createType("Material", new MaterialConverter(), new MaterialSuggestionProvider());
     }
 
     private void addDefinitionToCommandMap(final Method m)  {
