@@ -1,0 +1,6 @@
+name: RuntimeCommands
+version: ${project.version}
+main: de.eistrach.rtcommands.RuntimeCommands
+load: STARTUP
+authors: [Eugen]
+description: Allows to define commands via Java annotations (no entry in plugin.yml necessary)
