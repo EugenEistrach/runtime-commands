@@ -44,9 +44,13 @@ public class CommandManager {
     }
 
     public void registerAllRuntimeCommands() {
+        registerAllRuntimeCommands(null);
+    }
+
+    public void registerAllRuntimeCommands(final String packageName) {
         addDefaultConverters();
 
-        final List<Method> methods = getRuntimeCommandMethods();
+        final List<Method> methods = getRuntimeCommandMethods(packageName);
         methods.sort(Comparator.comparing(method -> ((Method) method).getAnnotation(RuntimeCommand.class).priority())
                 .reversed());
         methods.forEach(this::addDefinitionToCommandMap);
@@ -88,7 +92,6 @@ public class CommandManager {
         baseCommand.merge(customCommand);
         baseCommand.addPattern(new CommandPattern(this, runtimeCommand, m));
     }
-
 
     private void registerCommand(final CustomCommand customCommand) {
         final CommandMap map = getCommandMap();
@@ -137,10 +140,14 @@ public class CommandManager {
         return null;
     }
 
-    private List<Method> getRuntimeCommandMethods() {
+    private List<Method> getRuntimeCommandMethods(final String customPackageName) {
+
+        final String packageName = customPackageName != null ? customPackageName :
+                plugin.getClass().getPackage().getName();
+
         final Reflections reflections = new Reflections(
                 new ConfigurationBuilder()
-                        .setUrls(ClasspathHelper.forPackage(plugin.getClass().getPackage().getName()))
+                        .setUrls(ClasspathHelper.forPackage(packageName, plugin.getClass().getClassLoader()))
                         .setScanners(new MethodAnnotationsScanner())
         );
         return new ArrayList<>(reflections.getMethodsAnnotatedWith(RuntimeCommand.class));

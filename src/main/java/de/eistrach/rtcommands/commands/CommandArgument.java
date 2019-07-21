@@ -9,13 +9,13 @@ public class CommandArgument {
 
     private boolean isValidPattern = true;
 
-    private final String name;
+    private String name;
     private String type;
 
     private boolean noType;
-    private final boolean requireName;
+    private boolean requireName;
 
-    private final int length;
+    private int length;
 
     private final String pattern;
 
@@ -26,6 +26,7 @@ public class CommandArgument {
 
         if (!m.find()) {
             isValidPattern = false;
+            return;
         }
 
         name = m.group("name");
