@@ -7,6 +7,7 @@ import org.bukkit.Bukkit;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.logging.Logger;
@@ -68,9 +69,7 @@ public class CommandPattern {
 
             final int paramsIndex = argument.requireName() ? argsIndex + 1 : argsIndex;
 
-            if (paramsIndex >= args.length ||
-                    argument.requireName() && !args[argsIndex].equals(argument.getName()) ||
-                    !argument.requireName() && args[argsIndex].equals(argument.getName())) {
+            if (paramsIndex >= args.length || argument.requireName() && !args[argsIndex].equals(argument.getName())) {
                 hasError = true;
                 break;
             }
@@ -98,6 +97,44 @@ public class CommandPattern {
         }
 
         return params.toArray();
+    }
+
+    public List<String> getSuggestions(final String[] args) {
+        final List<String> suggestions = new ArrayList<>();
+
+        final List<CommandArgument> argumentList = getArguments();
+
+        boolean checkValue = false;
+        int argumentsIndex = 0;
+        for (int i = 0; i < args.length - 1; i++) {
+            final CommandArgument argument = argumentList.get(argumentsIndex);
+            if (!checkValue && argument.requireName() && !argument.getName().equals(args[i])) {
+                    return Collections.emptyList();
+            }
+
+            if (checkValue) {
+                checkValue = false;
+            } else if (argument.requireName() && !argument.hasNoType() ) {
+                checkValue = true;
+            }
+
+            if (argument.requireName() && !argument.hasNoType() && !checkValue ||
+                    argument.hasNoType() ||
+                    !argument.requireName()) {
+                argumentsIndex++;
+            }
+        }
+
+        if (argumentsIndex < argumentList.size()) {
+            final CommandArgument argument = argumentList.get(argumentsIndex);
+            if (checkValue || !argument.requireName()) {
+                // todo: add value suggestions
+                // suggestions.add("value");
+            } else {
+                suggestions.add(argument.getName());
+            }
+        }
+        return suggestions;
     }
 
 

@@ -110,6 +110,7 @@ public class CommandManager {
         command.setPermission(customCommand.getPermission());
         command.setExecutor(customCommand);
         command.setUsage(customCommand.getUsage());
+        command.setTabCompleter(new CommandTabCompleter(customCommand));
 
         map.register(plugin.getDescription().getName(), command);
     }

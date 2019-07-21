@@ -10,9 +10,11 @@ import org.bukkit.command.CommandSender;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 public class CustomCommand implements CommandExecutor {
 
@@ -111,7 +113,13 @@ public class CustomCommand implements CommandExecutor {
         usages.clear();
         patterns.sort(Comparator.comparing(CommandPattern::getPriority).reversed());
         patterns.forEach(commandPattern -> usages.add(createUsage(commandPattern)));
+    }
 
+    public List<String> getTabSuggestions(final String[] args) {
+        return patterns.stream()
+                .map(commandPattern -> commandPattern.getSuggestions(args))
+                .flatMap(Collection::stream)
+                .collect(Collectors.toList());
     }
 
     private String createUsage(final CommandPattern pattern) {
